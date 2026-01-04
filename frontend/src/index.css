@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pulpe-dark: #0a0a1a;
+  --pulpe-darker: #050510;
+  --pulpe-red: #e63946;
+  --pulpe-gold: #ffd700;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--pulpe-dark);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pulpe-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pulpe-red);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff4d5a;
+}
+
+/* Leaflet map fixes */
+.leaflet-container {
+  background: var(--pulpe-dark) !important;
+  border-radius: 12px;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--pulpe-dark) !important;
+  color: white !important;
+  border: 1px solid var(--pulpe-red);
+  border-radius: 8px !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--pulpe-dark) !important;
+  border: 1px solid var(--pulpe-red);
+}
+
+/* Stars background */
+.stars-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--duration) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-pulpe-red hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+}
+
+.btn-secondary {
+  @apply bg-transparent border-2 border-pulpe-red text-pulpe-red hover:bg-pulpe-red hover:text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200;
+}
+
+.btn-gold {
+  @apply bg-pulpe-gold hover:bg-yellow-500 text-pulpe-dark font-semibold py-2 px-4 rounded-lg transition-all duration-200;
+}
+
+/* Card styles */
+.card {
+  @apply bg-pulpe-darker/50 backdrop-blur-sm border border-gray-800 rounded-xl p-4 transition-all duration-200 hover:border-pulpe-red/50;
+}
+
+.card-glow {
+  @apply card hover:shadow-lg hover:shadow-pulpe-red/20;
+}
+
+/* Input styles */
+.input {
+  @apply w-full bg-pulpe-darker border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-pulpe-red focus:ring-1 focus:ring-pulpe-red transition-all;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply inline-block w-6 h-6 border-2 border-pulpe-red border-t-transparent rounded-full animate-spin;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-pending {
+  @apply bg-yellow-500/20 text-yellow-400;
+}
+
+.badge-accepted {
+  @apply bg-blue-500/20 text-blue-400;
+}
+
+.badge-ready {
+  @apply bg-green-500/20 text-green-400;
+}
+
+.badge-delivered {
+  @apply bg-gray-500/20 text-gray-400;
+}
+
+.badge-cancelled {
+  @apply bg-red-500/20 text-red-400;
+}
+
+/* Image zoom */
+[data-rmiz] {
+  display: block;
+}
+
+/* Order card game-like styles */
+.order-card {
+  @apply relative overflow-hidden;
+  background: linear-gradient(135deg, rgba(10, 10, 26, 0.9) 0%, rgba(20, 20, 40, 0.9) 100%);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--pulpe-red), var(--pulpe-gold));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.order-card.new {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(230, 57, 70, 0.3), 0 0 10px rgba(255, 215, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(230, 57, 70, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+  }
+}
