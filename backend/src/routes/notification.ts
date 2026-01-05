@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
@@ -6,14 +6,14 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get VAPID public key for push notifications
-router.get('/vapid-key', (req, res) => {
+router.get('/vapid-key', (req: Request, res: Response) => {
   res.json({
     publicKey: process.env.VAPID_PUBLIC_KEY || '',
   });
 });
 
 // Subscribe to push notifications
-router.post('/subscribe', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/subscribe', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { endpoint, keys } = req.body;
 
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
@@ -40,7 +40,7 @@ router.post('/subscribe', authenticate, asyncHandler(async (req: AuthRequest, re
 }));
 
 // Unsubscribe from push notifications
-router.post('/unsubscribe', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/unsubscribe', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { endpoint } = req.body;
 
   if (!endpoint) {
@@ -55,7 +55,7 @@ router.post('/unsubscribe', authenticate, asyncHandler(async (req: AuthRequest, 
 }));
 
 // Get user's subscriptions
-router.get('/subscriptions', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.get('/subscriptions', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId: req.user!.id },
     select: { endpoint: true, createdAt: true },
