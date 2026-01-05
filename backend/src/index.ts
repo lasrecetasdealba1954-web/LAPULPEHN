@@ -5,7 +5,6 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 // Routes
@@ -23,9 +22,6 @@ import statsRoutes from './routes/stats.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -91,7 +87,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🏪 La Pulpería server running on port ${PORT}`);
+  console.log(`La Pulpería server running on port ${PORT}`);
 });
 
 export default app;
