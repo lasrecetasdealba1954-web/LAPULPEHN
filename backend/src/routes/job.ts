@@ -1,10 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { prisma } from '../lib/prisma.js';
 import { uploadImage } from '../lib/cloudinary.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, requirePulperia, AuthRequest } from '../middleware/auth.js';
 import { sendPushNotification } from '../lib/webpush.js';
+import { AuthRequest } from '../types.ts';  // Importe el nuevo types.ts
 
 const router = Router();
 
@@ -12,18 +13,18 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
     const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten PDF e imágenes'));
+      cb(new Error('Solo se permiten PDF e imágenes'), false);
     }
   },
 });
 
 // Get all active jobs
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { search, pulperiaId } = req.query;
 
   const where: any = { isActive: true };
@@ -52,7 +53,7 @@ router.get('/', asyncHandler(async (req, res) => {
 }));
 
 // Get pulperia's jobs
-router.get('/my-jobs', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.get('/my-jobs', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const pulperia = await prisma.pulperia.findUnique({
     where: { userId: req.user!.id },
   });
@@ -76,7 +77,7 @@ router.get('/my-jobs', authenticate, requirePulperia, asyncHandler(async (req: A
 }));
 
 // Get user's job applications
-router.get('/my-applications', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.get('/my-applications', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const applications = await prisma.jobApplication.findMany({
     where: { userId: req.user!.id },
     include: {
@@ -91,7 +92,7 @@ router.get('/my-applications', authenticate, asyncHandler(async (req: AuthReques
 }));
 
 // Get single job
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const job = await prisma.job.findUnique({
@@ -109,7 +110,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 // Create job (pulperia only)
-router.post('/', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { title, description, salary } = req.body;
 
   if (!title || !description) {
@@ -137,7 +138,7 @@ router.post('/', authenticate, requirePulperia, asyncHandler(async (req: AuthReq
 }));
 
 // Update job
-router.patch('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { title, description, salary, isActive } = req.body;
 
@@ -171,7 +172,7 @@ router.patch('/:id', authenticate, requirePulperia, asyncHandler(async (req: Aut
 }));
 
 // Delete job
-router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
   const pulperia = await prisma.pulperia.findUnique({
@@ -196,7 +197,7 @@ router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: Au
 }));
 
 // Apply to job
-router.post('/:id/apply', authenticate, upload.single('cv'), asyncHandler(async (req: AuthRequest, res) => {
+router.post('/:id/apply', authenticate, upload.single('cv'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { message } = req.body;
 
@@ -258,7 +259,7 @@ router.post('/:id/apply', authenticate, upload.single('cv'), asyncHandler(async 
 }));
 
 // Respond to application (accept/reject)
-router.post('/applications/:id/respond', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/applications/:id/respond', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { status, response } = req.body;
 
