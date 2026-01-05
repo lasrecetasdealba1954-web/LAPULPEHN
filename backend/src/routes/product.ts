@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { prisma } from '../lib/prisma.js';
 import { uploadImage, deleteImage } from '../lib/cloudinary.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, requirePulperia, AuthRequest } from '../middleware/auth.js';
+import { AuthRequest } from '../types.ts';  // Importe el nuevo types.ts
 
 const router = Router();
 
@@ -11,17 +12,17 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes'));
+      cb(new Error('Solo se permiten imágenes'), false);
     }
   },
 });
 
 // Get products (with optional pulperia filter)
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { pulperiaId, category, search, available } = req.query;
 
   const where: any = {};
@@ -57,7 +58,7 @@ router.get('/', asyncHandler(async (req, res) => {
 }));
 
 // Get single product
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const product = await prisma.product.findUnique({
@@ -85,7 +86,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 // Create product (pulperia only)
-router.post('/', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res) => {
+router.post('/', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { name, description, price, category, stock } = req.body;
 
   if (!name || !price) {
@@ -125,7 +126,7 @@ router.post('/', authenticate, requirePulperia, upload.single('image'), asyncHan
 }));
 
 // Update product
-router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { name, description, price, category, stock, isAvailable } = req.body;
 
@@ -179,7 +180,7 @@ router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyn
 }));
 
 // Delete product
-router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
   // Get user's pulperia
