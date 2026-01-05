@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get reviews for a pulperia
-router.get('/pulperia/:pulperiaId', asyncHandler(async (req, res) => {
+router.get('/pulperia/:pulperiaId', asyncHandler(async (req: Request, res: Response) => {
   const { pulperiaId } = req.params;
   const { page = '1', limit = '10' } = req.query;
 
@@ -36,7 +36,7 @@ router.get('/pulperia/:pulperiaId', asyncHandler(async (req, res) => {
 }));
 
 // Create or update review
-router.post('/pulperia/:pulperiaId', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/pulperia/:pulperiaId', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { pulperiaId } = req.params;
   const { rating, comment } = req.body;
 
@@ -95,7 +95,7 @@ router.post('/pulperia/:pulperiaId', authenticate, asyncHandler(async (req: Auth
 }));
 
 // Delete review
-router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
   const review = await prisma.review.findFirst({
