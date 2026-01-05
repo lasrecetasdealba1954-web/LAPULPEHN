@@ -1,9 +1,10 @@
-import { Router } from 'express';
-import multer from 'multer';
+import { Router, Request, Response } from 'express';
+import multer, { Multer } from 'multer';
 import { prisma } from '../lib/prisma.js';
 import { uploadImage, deleteImage } from '../lib/cloudinary.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { AuthRequest } from '../types.ts';  // Importe el nuevo types.ts
 
 const router = Router();
 
@@ -11,17 +12,17 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes'));
+      cb(new Error('Solo se permiten imágenes'), false);
     }
   },
 });
 
 // Get all service catalogs (for discovery)
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { profession, search } = req.query;
 
   const where: any = {};
@@ -50,7 +51,7 @@ router.get('/', asyncHandler(async (req, res) => {
 }));
 
 // Get user's catalogs
-router.get('/my-catalogs', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.get('/my-catalogs', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const catalogs = await prisma.serviceCatalog.findMany({
     where: { userId: req.user!.id },
     include: {
@@ -63,7 +64,7 @@ router.get('/my-catalogs', authenticate, asyncHandler(async (req: AuthRequest, r
 }));
 
 // Get single catalog
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const catalog = await prisma.serviceCatalog.findUnique({
@@ -82,7 +83,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 // Get catalogs by user
-router.get('/user/:userId', asyncHandler(async (req, res) => {
+router.get('/user/:userId', asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   const catalogs = await prisma.serviceCatalog.findMany({
@@ -98,7 +99,7 @@ router.get('/user/:userId', asyncHandler(async (req, res) => {
 }));
 
 // Create catalog
-router.post('/', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { profession, description } = req.body;
 
   if (!profession) {
@@ -128,7 +129,7 @@ router.post('/', authenticate, asyncHandler(async (req: AuthRequest, res) => {
 }));
 
 // Update catalog
-router.patch('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { description } = req.body;
 
@@ -149,7 +150,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) =>
 }));
 
 // Delete catalog
-router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
   const catalog = await prisma.serviceCatalog.findFirst({
@@ -174,7 +175,7 @@ router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res) =
 }));
 
 // Add image to catalog (max 6)
-router.post('/:id/images', authenticate, upload.single('image'), asyncHandler(async (req: AuthRequest, res) => {
+router.post('/:id/images', authenticate, upload.single('image'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { description } = req.body;
 
@@ -211,7 +212,7 @@ router.post('/:id/images', authenticate, upload.single('image'), asyncHandler(as
 }));
 
 // Update image order or description
-router.patch('/:catalogId/images/:imageId', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/:catalogId/images/:imageId', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { catalogId, imageId } = req.params;
   const { description, order } = req.body;
 
@@ -243,7 +244,7 @@ router.patch('/:catalogId/images/:imageId', authenticate, asyncHandler(async (re
 }));
 
 // Delete image from catalog
-router.delete('/:catalogId/images/:imageId', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:catalogId/images/:imageId', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { catalogId, imageId } = req.params;
 
   const catalog = await prisma.serviceCatalog.findFirst({
