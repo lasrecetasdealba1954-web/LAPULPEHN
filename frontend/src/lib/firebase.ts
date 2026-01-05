@@ -1,6 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
+interface ImportMetaEnv {
+  VITE_FIREBASE_API_KEY: string;
+  VITE_FIREBASE_AUTH_DOMAIN: string;
+  VITE_FIREBASE_PROJECT_ID: string;
+  VITE_FIREBASE_STORAGE_BUCKET: string;
+  VITE_FIREBASE_MESSAGING_SENDER_ID: string;
+  VITE_FIREBASE_APP_ID: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
