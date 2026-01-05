@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { prisma } from '../lib/prisma.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
@@ -8,7 +8,7 @@ import '../lib/firebase.js';
 const router = Router();
 
 // Register or login user with Firebase token
-router.post('/login', asyncHandler(async (req: AuthRequest, res) => {
+router.post('/login', asyncHandler(async (req: AuthRequest, res: Response) => {
   const { idToken, userType } = req.body;
 
   if (!idToken) {
@@ -52,7 +52,7 @@ router.post('/login', asyncHandler(async (req: AuthRequest, res) => {
 }));
 
 // Get current user
-router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
     include: { pulperia: true },
@@ -74,7 +74,7 @@ router.get('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => {
 }));
 
 // Update user profile
-router.patch('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { name, phone } = req.body;
 
   const user = await prisma.user.update({
@@ -97,7 +97,7 @@ router.patch('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => 
 }));
 
 // Switch user type (customer to pulperia or vice versa)
-router.post('/switch-type', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.post('/switch-type', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { userType } = req.body;
 
   if (!['CUSTOMER', 'PULPERIA'].includes(userType)) {
@@ -123,7 +123,7 @@ router.post('/switch-type', authenticate, asyncHandler(async (req: AuthRequest, 
 }));
 
 // Delete account and download data
-router.delete('/me', authenticate, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/me', authenticate, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { downloadData } = req.query;
 
   const userId = req.user!.id;
