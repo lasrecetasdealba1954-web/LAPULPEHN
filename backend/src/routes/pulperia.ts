@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { prisma } from '../lib/prisma.js';
 import { uploadImage, deleteImage } from '../lib/cloudinary.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { authenticate, requirePulperia, AuthRequest } from '../middleware/auth.js';
+import { AuthRequest } from '../types.ts';  // Importe el nuevo types.ts
 
 const router = Router();
 
@@ -11,17 +12,17 @@ const router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes'));
+      cb(new Error('Solo se permiten imágenes'), false);
     }
   },
 });
 
 // Get all pulperias (with filters)
-router.get('/', asyncHandler(async (req: AuthRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthRequest, res: Response) => {
   const { lat, lng, radius, search } = req.query;
 
   let where: any = { isActive: true };
@@ -67,7 +68,7 @@ router.get('/', asyncHandler(async (req: AuthRequest, res) => {
 }));
 
 // Get single pulperia
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const pulperia = await prisma.pulperia.findUnique({
@@ -92,7 +93,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 }));
 
 // Create pulperia (requires auth and customer type switches to pulperia)
-router.post('/', authenticate, upload.single('image'), asyncHandler(async (req: AuthRequest, res) => {
+router.post('/', authenticate, upload.single('image'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { name, description, address, latitude, longitude, phone, whatsapp } = req.body;
 
   if (!name || !address || !latitude || !longitude) {
@@ -140,7 +141,7 @@ router.post('/', authenticate, upload.single('image'), asyncHandler(async (req: 
 }));
 
 // Update pulperia
-router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res) => {
+router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { name, description, address, latitude, longitude, phone, whatsapp, isOpen } = req.body;
 
@@ -179,7 +180,7 @@ router.patch('/:id', authenticate, requirePulperia, upload.single('image'), asyn
 }));
 
 // Delete pulperia (close business)
-router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { downloadData } = req.query;
 
@@ -241,7 +242,7 @@ router.delete('/:id', authenticate, requirePulperia, asyncHandler(async (req: Au
 }));
 
 // Get share link
-router.get('/:id/share', asyncHandler(async (req, res) => {
+router.get('/:id/share', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const pulperia = await prisma.pulperia.findUnique({
